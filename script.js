@@ -72,15 +72,12 @@ let currentCity = "";
 let currentCategory = "";
 
 
-<<<<<<< HEAD
 // ═══════════════════════════════════════════
 //  APP LOGIN (mot de passe global)
 // ═══════════════════════════════════════════
-=======
 
 //  APP LOGIN (mot de passe global)
 
->>>>>>> b9d3e5c265ab9017f65a0ef96ec756caffe9b5f7
 
 const APP_PASSWORD = "LXICE";
 
@@ -127,13 +124,10 @@ appPasswordInput.addEventListener("keydown", function(e) {
 
 appPasswordInput.focus();
 
-<<<<<<< HEAD
 
 
 
 
-=======
->>>>>>> b9d3e5c265ab9017f65a0ef96ec756caffe9b5f7
 //  NAVIGATION
 
 
@@ -310,11 +304,9 @@ window.deleteDocument = function(id) {
     renderDocuments();
 };
 
-<<<<<<< HEAD
 // ═══════════════════════════════════════════
 //  SUGGESTIONS D'AÉROPORTS (Woosmap 🇫🇷)
 // ═══════════════════════════════════════════
-=======
 
 
 
@@ -324,7 +316,6 @@ window.deleteDocument = function(id) {
 // ═══════════════════════════════════════════
 
 const WOOSMAP_API_KEY = "woos-dd8d1dbb-df54-328f-9e5e-556984559e37";
->>>>>>> b9d3e5c265ab9017f65a0ef96ec756caffe9b5f7
 
 const WOOSMAP_API_KEY = "woos-dd8d1dbb-df54-328f-9e5e-556984559e37";
 
@@ -340,14 +331,11 @@ if (searchInput && suggestions) {
             return;
         }
         
-<<<<<<< HEAD
         
 debounceTimer = setTimeout(async () => {
-=======
         debounceTimer = setTimeout(async () => {
          
          
->>>>>>> b9d3e5c265ab9017f65a0ef96ec756caffe9b5f7
 
     // ⚡ 1. CHERCHER PAR CODE IATA (via Airport Gap)
     if (value.length === 3) {
@@ -424,27 +412,21 @@ debounceTimer = setTimeout(async () => {
     }
 }, 300);
 
-<<<<<<< HEAD
  });   // ← Ferme searchInput.addEventListener("input", ...)
 }      
 
 
-=======
         });   // ← Ferme searchInput.addEventListener("input", ...)
 }      
 
->>>>>>> b9d3e5c265ab9017f65a0ef96ec756caffe9b5f7
 document.addEventListener("click", function(e) {
     if (!e.target.closest("#suggestions") && e.target !== searchInput) {
         suggestions.style.display = "none";
     }
-<<<<<<< HEAD
 });
 // ══════════════
-=======
 });  
     
->>>>>>> b9d3e5c265ab9017f65a0ef96ec756caffe9b5f7
 
 //  AJOUTER UNE DESTINATION
 
@@ -534,13 +516,10 @@ async function renderNotesForCity(city) {
     notesList.innerHTML = html;
 }
 
-<<<<<<< HEAD
 window.showCategory = async function(city, category) {
-=======
 
     
     window.showCategory = async function(city, category) {
->>>>>>> b9d3e5c265ab9017f65a0ef96ec756caffe9b5f7
     currentCity = city;
     currentCategory = category;
     
@@ -596,11 +575,8 @@ cancelNoteButton.addEventListener("click", function() {
   
 
 
-<<<<<<< HEAD
     
-=======
     //  EFFACER LA PAGE → retour neutre
->>>>>>> b9d3e5c265ab9017f65a0ef96ec756caffe9b5f7
     saveNoteButton.addEventListener("click", async function() {
     if (!noteAuthor.value.trim() || !noteText.value.trim()) {
         alert("Please fill in your name and the note.");

@@ -72,9 +72,7 @@ let currentCity = "";
 let currentCategory = "";
 
 
-// ═══════════════════════════════════════════
-//  APP LOGIN (mot de passe global)
-// ═══════════════════════════════════════════
+
 
 //  APP LOGIN (mot de passe global)
 
@@ -304,9 +302,6 @@ window.deleteDocument = function(id) {
     renderDocuments();
 };
 
-// ═══════════════════════════════════════════
-//  SUGGESTIONS D'AÉROPORTS (Woosmap 🇫🇷)
-// ═══════════════════════════════════════════
 
 
 
@@ -317,7 +312,7 @@ window.deleteDocument = function(id) {
 
 const WOOSMAP_API_KEY = "woos-dd8d1dbb-df54-328f-9e5e-556984559e37";
 
-const WOOSMAP_API_KEY = "woos-dd8d1dbb-df54-328f-9e5e-556984559e37";
+
 
 if (searchInput && suggestions) {
     let debounceTimer;
@@ -333,7 +328,7 @@ if (searchInput && suggestions) {
         
         
 debounceTimer = setTimeout(async () => {
-        debounceTimer = setTimeout(async () => {
+     
          
          
 
@@ -416,17 +411,13 @@ debounceTimer = setTimeout(async () => {
 }      
 
 
-        });   // ← Ferme searchInput.addEventListener("input", ...)
-}      
 
 document.addEventListener("click", function(e) {
     if (!e.target.closest("#suggestions") && e.target !== searchInput) {
         suggestions.style.display = "none";
     }
 });
-// ══════════════
-});  
-    
+
 
 //  AJOUTER UNE DESTINATION
 

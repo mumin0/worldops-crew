@@ -1,0 +1,238 @@
+
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f0f4f8;
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+}
+
+
+.sidebar {
+    background: #1a365d !important;
+    color: white !important;
+    width: 30%;                /* 30% de la largeur de l'écran */
+    min-width: 240px;          /* Jamais moins de 240px */
+    max-width: 400px;          /* Jamais plus de 400px */
+    min-height: 100vh;
+    padding: 20px;
+    flex-shrink: 0;
+    font-family: Arial, sans-serif; 
+}
+/* TOUS les éléments dans la sidebar */
+.sidebar * {
+    background: transparent !important;   /* ← PAS DE FOND BLANC */
+               /* ← TOUT EN BLANC */
+}
+
+
+.sidebar h1,
+.sidebar p,
+.sidebar .menu-item {
+    font-family: Arial, sans-serif;    /* ← ARIAL */
+    font-size: 16px;                    /* ← MÊME TAILLE */
+    line-height: 1.4;
+    color: white;
+
+}
+.sidebar h1 {
+    margin-bottom: 8px;
+}
+/* Hi, Crew! */
+.sidebar p {
+    color: #bee3f8; 
+    margin-bottom: 30px;
+}
+/* Menu */
+.menu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.menu-item {
+    padding: 12px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+     color: white;
+
+}
+
+
+.main-content {
+    background: white;
+    flex: 1;
+    gap: 8px;
+}
+.menu-item {
+    padding: 12px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: 0.2s;
+    color: white;
+    
+}
+/* Survol général : léger mouvement (pour tous) */
+.menu-item:hover {
+    color: #FF00FF !important;
+    background: rgba(255, 255, 255, 0.15) !important;       
+}
+.menu-item.active:hover {
+ color: #FF00FF !important;
+
+}
+/* Survol SPÉCIAL pour Private : MAGENTA */
+#menuPrivate:hover {
+    color: #FF00FF !important;            /* ← MAGENTA */
+    background: rgba(255, 255, 255, 0.15) !important;
+}
+
+.menu-item.active {
+    background: #4299e1 !important;
+    color: white;   
+    
+
+}
+
+.main-content {
+    background: white;            /* ← FOND BLANC */
+    color: #1a202c;               /* ← TEXTE NOIR */
+    flex: 1;
+    padding: 30px;
+    min-height: 100vh;
+}
+
+h2 {
+    color: #2b6cb0;
+    margin-bottom: 16px;
+    margin-top: 8px;
+    font-size: 14px;
+    font-weight: 600;
+}
+/* Barre de recherche */
+input[type="text"] {
+    padding: 10px 14px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    width: 250px;
+    margin-right: 8px;
+    margin-bottom: 8px;
+}
+/* Boutons */
+button {
+    background: #4299e1;
+    color: white;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-right: 8px;
+    margin-bottom: 8px;
+    transition: all 0.2s ease;
+}
+button:hover {
+          
+    color: #FF00FF !important;           
+    
+    
+}
+/* Conteneur des notes */
+#notesList {
+    margin-top: 20px;
+    background: #f7fafc;
+    border: 2px dashed #cbd5e0;
+    border-radius: 12px;
+    padding: 20px;
+    min-height: 150px;
+}
+
+/*  NOTES LIST                                  */
+/* ═══════════════════════════════════════════ */
+
+#notesList {
+    margin-top: 20px;
+    background: #f7fafc;
+    border: 2px dashed #cbd5e0;
+    border-radius: 12px;
+    padding: 20px;
+    min-height: 150px;
+    color: #1a202c;
+ 
+}
+
+
+
+  /*  MOBILE (max-width: 768px)                  */
+
+
+@media (max-width: 768px) {
+    
+    .sidebar {
+        width: 30% !important;
+        min-width: 100px !important;
+        max-width: 150px !important;
+        padding: 10px 6px !important;
+    }
+    
+    .sidebar h1 {
+        font-size: 12px !important;
+    }
+    
+    .sidebar p {
+        font-size: 11px !important;
+        margin-bottom: 12px !important;
+    }
+    
+    .menu-item {
+        padding: 8px 6px !important;
+        font-size: 11px !important;
+    }
+    
+    .main-content {
+        padding: 10px !important;
+        overflow-x: hidden !important;
+    }
+    
+    #searchInput,
+    input[type="text"] {
+        width: 100% !important;
+        font-size: 13px !important;
+    }
+    
+    button {
+        padding: 8px 10px !important;
+        font-size: 12px !important;
+        margin-right: 4px !important;
+    }
+    
+    h2 {
+        font-size: 14px !important;
+    }
+    
+    h3 {
+        font-size: 13px !important;
+    }
+    
+    #suggestions {
+        width: 100% !important;
+        left: 0 !important;
+    }
+    
+    #notesList {
+        padding: 10px !important;
+    }
+}

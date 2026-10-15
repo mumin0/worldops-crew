@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <title>WorldOps</title>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a365d">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="WorldOps">
+</head>
+
+<body>
+
+<!--  ÉCRAN DE LOGIN (APP)                       -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="appLoginScreen" style="
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: #1a365d;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+">
+    <div style="
+        background: white;
+        padding: 40px;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        text-align: center;
+        max-width: 400px;
+        width: 90%;
+    ">
+        <h1 style="color: #1a365d; margin-bottom: 10px;">🛩️ WorldOps</h1>
+        <p style="color: #4a5568; margin-bottom: 30px;">Enter crew password</p>
+        
+        <input type="password" id="appPasswordInput" placeholder="🔑 Password" style="
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        ">
+        
+        <button id="appLoginButton" style="
+            width: 100%;
+            padding: 12px;
+            background: #4299e1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        ">🔓 Login</button>
+        
+        <p id="appLoginError" style="color: red; display: none; margin-top: 15px;">
+
+            ❌ nope nope nope, Try again!!
+
+        </p>
+    </div>
+</div>
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <h1>🛩️ WorldOps</h1>
+        <p>👋 Hi, Crew!</p>
+        
+        <div class="menu">
+            <div class="menu-item active" id="menuPublic">✈️ Destination</div>
+            <div class="menu-item" id="menuPrivate">🔒 Private</div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+
+        <!-- Section 1 : Destination Notes -->
+        <div id="public" style="display: none;">
+            <h2>📝 Destination Notes</h2>
+            
+            <div style="position: relative; display: inline-block;">
+                <input type="text" id="searchInput" placeholder="🔍 Search by city..." autocomplete="off" style="width: 250px;">
+                <div id="suggestions" style="
+                    display: none;
+                    position: absolute;
+                    top: 100%;
+                    left: 0;
+                    width: 250px;
+                    background: white;
+                    border: 2px solid #e2e8f0;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                    max-height: 200px;
+                    overflow-y: auto;
+                    z-index: 1000;
+                "></div>
+            </div>
+            
+            <button id="searchButton">Search</button>
+            <button id="addDestinationButton">🌍 Add New Destination</button>
+
+            <!-- Formulaire Add Destination -->
+<div id="addDestinationForm" style="display: none; margin-top: 20px; padding: 20px; background: #f7fafc; border-radius: 12px;">
+    <h3 style="margin-bottom: 12px;">🌍 Add New Destination</h3>
+    <input type="text" id="newCity" placeholder="🏙️ City Name" style="display: block; margin-bottom: 10px; width: 100%;">
+    <input type="text" id="newCountry" placeholder="🌍 Country" style="display: block; margin-bottom: 10px; width: 100%;">
+    <input type="text" id="newCode" placeholder="✈️ IATA Code" style="display: block; margin-bottom: 10px; width: 100%;">
+    <button id="saveDestinationButton">💾 Save</button>
+    <button id="cancelDestinationButton">❌ Cancel</button>
+</div>
+            <div id="notesList" style="margin-top: 20px;"></div>
+
+            <div id="addNoteForm" style="display: none; margin-top: 20px; padding: 20px; background: #f7fafc; border-radius: 12px;">
+                <h3 style="margin-bottom: 12px;">✏️ Add Note</h3>
+                
+                <label style="display: block; margin-bottom: 6px; font-weight: 600;">📍 Destination:</label>
+                <input type="text" id="noteCity" placeholder="City" style="display: block; margin-bottom: 10px; width: 100%;" readonly>
+                
+                <label style="display: block; margin-bottom: 6px; font-weight: 600;">📂 Category:</label>
+                <select id="noteCategory" style="display: block; margin-bottom: 10px; padding: 10px; width: 100%; border-radius: 8px; border: 2px solid #e2e8f0;">
+                    <option value="Airport">🛫 Airport</option>
+                    <option value="Hotels">🏨 Hotels</option>
+                    <option value="Catering">🍽️ Catering</option>
+                    <option value="Handling">🛫 Handling</option>
+                    <option value="Language">🗣️ Language</option>
+                    <option value="Other">📌 Other</option>
+                </select>
+                
+                <label style="display: block; margin-bottom: 6px; font-weight: 600;">👤 Your Name:</label>
+                <input type="text" id="noteAuthor" placeholder="Your name" style="display: block; margin-bottom: 10px; width: 100%;">
+                
+                <label style="display: block; margin-bottom: 6px; font-weight: 600;">💬 Note:</label>
+                <textarea id="noteText" placeholder="Write your note here..." style="display: block; margin-bottom: 10px; width: 100%; min-height: 80px; padding: 10px; border-radius: 8px; border: 2px solid #e2e8f0;"></textarea>
+                
+                <button id="saveNoteButton">💾 Save Note</button>
+                <button id="cancelNoteButton">❌ Cancel</button>
+            </div>
+        </div>
+
+        <!-- Section 2 : Login -->
+        <div id="login" style="display: none;">
+            <h2>🔒 Private Area</h2>
+            <p style="margin-bottom: 20px;">Enter password to access visa management</p>
+            
+            <input type="password" id="passwordInput" placeholder="🔑 Password">
+            <button id="loginButton">🔓 Login</button>
+            <p id="loginError" style="color: red; display: none; margin-top: 10px;">
+                ❌ Oh noooo, that did not work out did it?
+            </p>
+        </div>
+
+        <!-- Section 3 : Visa / Passport Management -->
+        <div id="visa" style="display: none;">
+            <h2>🛂 Visa / Passport Management</h2>
+            <button id="addVisaButton">➕ Add Visa / Passport</button>
+            <button id="logoutButton">👤 Logout</button>
+
+            <div id="addForm" style="display: none; margin-top: 20px; padding: 20px; background: #f7fafc; border-radius: 12px;">
+                <h3 style="margin-bottom: 12px;">➕ New Document</h3>
+                <input type="text" id="crewName" placeholder="👤 Crew Name" style="display: block; margin-bottom: 10px; width: 100%;">
+                <input type="text" id="country" placeholder="🌍 Country" style="display: block; margin-bottom: 10px; width: 100%;">
+                
+                <select id="docType" style="display: block; margin-bottom: 10px; padding: 10px; width: 100%; border-radius: 8px; border: 2px solid #e2e8f0;">
+                    <option value="Passport">📄 Passport</option>
+                    <option value="Visa">🛂 Visa</option>
+                </select>
+                
+                <label style="display: block; margin-bottom: 6px; font-weight: 600;">📅 Expiry Date:</label>
+                <input type="date" id="expiryDate" style="display: block; margin-bottom: 10px; width: 100%;">
+                
+                <label style="display: block; margin-bottom: 6px; font-weight: 600;">📷 Photo (optional):</label>
+                <input type="file" id="photoInput" accept="image/*" style="display: block; margin-bottom: 10px; width: 100%;">
+                
+                <button id="saveVisaButton">💾 Save</button>
+                <button id="cancelVisaButton">❌ Cancel</button>
+            </div>
+
+            <div id="visaList" style="margin-top: 20px;"></div>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
+
+</body>
+</html>

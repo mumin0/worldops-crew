@@ -507,7 +507,7 @@ async function renderNotesForCity(city) {
     notesList.innerHTML = html;
 }
 
-window.showCategory = async function(city, category) {
+
 
     
     window.showCategory = async function(city, category) {

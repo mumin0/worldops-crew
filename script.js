@@ -15,11 +15,6 @@ const NOTES_STORAGE_KEY = "worldops_notes";
 const CITIES_STORAGE_KEY = "worldops_custom_cities";
 const SMARTPHONE_API_KEY = "M5Z3rL8JIIhPGcMuxSw1RGTMEVyg7XWqB8G%2FSF6QphUPdcQsj0c5GHhSvcOHWUAd";
 
-// ─── Supabase ───
-const SUPABASE_URL = "https://qgtqcfaljzjnykdyxatg.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFndHFjZmFsanpqbnlrZHl4YXRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4NzU5NTAsImV4cCI6MjEwNzQ1MTk1MH0.VFgatFTipJlg3aJktO0WIO_uktgKTw_SOLdyPhECCIc";
-const { createClient } = supabase;
-const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // ─── Sections ───
 const public = document.getElementById("public");
 const login = document.getElementById("login");

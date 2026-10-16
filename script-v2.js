@@ -386,7 +386,7 @@ const WOOSMAP_API_KEY = "woos-dd8d1dbb-df54-328f-9e5e-556984559e37";
                             const results = airportsDb.exec(`
                                 SELECT ident, iata_code, name, municipality, iso_country
                                 FROM airports
-                                WHERE ident = '${code}'
+                                WHERE UPPER(ident) = '${code}' OR UPPER(iata_code) = '${code}'
                                 LIMIT 5
                             `);
                             

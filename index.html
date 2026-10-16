@@ -192,9 +192,17 @@
 
     </div>
 
-    <!-- Scripts -->
-   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script-v2.js"></script>
-
+    
+   <!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-wasm.js"></script>
+<script src="airports-data.js"></script>
+<script src="script-v2.js"></script>
+    <script type="module">
+  import { initializeBrowserDatabase, getAirportByICAO, getAirportByIATA } from 'https://cdn.jsdelivr.net/npm/airport-db/dist/browser.js';
+  
+  await initializeBrowserDatabase();
+  window.airportDb = { getAirportByICAO, getAirportByIATA };
+</script>
 </body>
 </html>

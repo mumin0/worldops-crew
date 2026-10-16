@@ -73,6 +73,32 @@ let currentCategory = "";
 
 
 
+//  SQLITE - Chargement en arrière-plan
+
+
+let airportsDb = null;
+let sqliteReady = false;
+
+(async function loadSqlite() {
+    try {
+        console.log("🔄 Chargement de SQLite en arrière-plan...");
+        
+        const SQL = await initSqlJs({
+            locateFile: file => `https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/${file}`
+        });
+        
+        const response = await fetch('/airports.sqlite');
+        const buffer = await response.arrayBuffer();
+        
+        airportsDb = new SQL.Database(new Uint8Array(buffer));
+        sqliteReady = true;
+        
+        console.log("✅ SQLite chargé ! (85 000 aéroports)");
+    } catch (error) {
+        console.error("❌ SQLite error:", error);
+    }
+})();
+
 
 //  APP LOGIN (mot de passe global)
 
@@ -306,7 +332,7 @@ window.deleteDocument = function(id) {
 
 const WOOSMAP_API_KEY = "woos-dd8d1dbb-df54-328f-9e5e-556984559e37";
 
-if (searchInput && suggestions) {
+    if (searchInput && suggestions) {
     let debounceTimer;
     
     searchInput.addEventListener("input", function() {
@@ -318,97 +344,135 @@ if (searchInput && suggestions) {
             return;
         }
         
-
-        
-debounceTimer = setTimeout(async () => {
-
-    
-
-    // ⚡ 1. CHERCHER PAR CODE IATA (via Airport Gap)
-    if (value.length === 3 || value.length === 4)  {
-        const iataCode = value.toUpperCase();
-        try {
-            const response = await fetch(`https://airportgap.com/api/airports/${iataCode}`);
-            if (response.ok) {
-                const data = await response.json();
-                const airport = data.data.attributes;
-
-                suggestions.innerHTML = `
-                    <div class="suggestion-item" data-city="${airport.city}" style="padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #f7fafc; font-size: 14px;">
-                        <span style="font-weight: 700; color: #2b6cb0;">${airport.iata}</span>
-                        <span style="color: #4a5568; font-size: 13px; margin-left: 8px;">— ${airport.name}</span>
-                        <span style="color: #a0aec0; font-size: 12px; margin-left: 8px;">${airport.city}, ${airport.country}</span>
-                    </div>
-                `;
-                suggestions.style.display = "block";
-
-                suggestions.querySelector(".suggestion-item").addEventListener("click", function() {
-                    searchInput.value = this.dataset.city;
-                    suggestions.style.display = "none";
-                    searchInput.focus();
-                    currentCity = this.dataset.city;
-                    renderNotesForCity(this.dataset.city);
-                });
-
-                return;
-            }
-        } catch (error) {
-            console.error("Airport Gap error:", error);
-        }
-    }
-
-    // 🌐 2. PUIS WOOSMAP
-    try {
-        const response = await fetch(
-            `https://api.woosmap.com/localities/autocomplete/?input=${encodeURIComponent(value)}&types=airport&key=${WOOSMAP_API_KEY}`
-        );
-        const data = await response.json();
-        
-        if (data && data.localities && data.localities.length > 0) {
-            suggestions.innerHTML = data.localities.map(item => {
-                const cityName = item.description || "";
-                const type = item.types ? item.types.join(", ") : "";
+        debounceTimer = setTimeout(async () => {
+            
+            // ⚡ RECHERCHE PAR CODE (IATA ou ICAO)
+            if (value.length === 3 || value.length === 4) {
+                const code = value.toUpperCase();
                 
-                return `
-                    <div class="suggestion-item" data-city="${cityName}" style="padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #f7fafc; font-size: 14px;">
-                        <span style="font-weight: 700; color: #2b6cb0;">${cityName}</span>
-                        <span style="color: #a0aec0; font-size: 12px; margin-left: 8px;">${type}</span>
-                    </div>
-                `;
-            }).join('');
+                // ─── CAS 1 : Code de 3 lettres (IATA) → Airport Gap ───
+                if (value.length === 3) {
+                    try {
+                        const response = await fetch(`https://airportgap.com/api/airports/${code}`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            const airport = data.data.attributes;
+                            suggestions.innerHTML = `
+                                <div class="suggestion-item" data-city="${airport.city}" style="padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #f7fafc; font-size: 14px;">
+                                    <span style="font-weight: 700; color: #2b6cb0;">${airport.iata}</span>
+                                    <span style="color: #4a5568; font-size: 13px; margin-left: 8px;">— ${airport.name}</span>
+                                    <span style="color: #a0aec0; font-size: 12px; margin-left: 8px;">${airport.city}, ${airport.country}</span>
+                                </div>
+                            `;
+                            suggestions.style.display = "block";
+                            suggestions.querySelector(".suggestion-item").addEventListener("click", function() {
+                                searchInput.value = this.dataset.city;
+                                suggestions.style.display = "none";
+                                searchInput.focus();
+                                currentCity = this.dataset.city;
+                                renderNotesForCity(this.dataset.city);
+                            });
+                            return;
+                        }
+                    } catch (error) {
+                        console.error("Airport Gap error:", error);
+                    }
+                }
+                
+                // ─── CAS 2 : Code de 4 lettres (ICAO) → SQLite ───
+                if (value.length === 4) {
+                    if (sqliteReady && airportsDb) {
+                        try {
+                            const results = airportsDb.exec(`
+                                SELECT ident, iata_code, name, municipality, iso_country
+                                FROM airports
+                                WHERE ident = '${code}'
+                                LIMIT 5
+                            `);
+                            
+                            if (results.length > 0 && results[0].values.length > 0) {
+                                const airports = results[0].values;
+                                suggestions.innerHTML = airports.map(a => {
+                                    const [ident, iata, name, city, country] = a;
+                                    return `
+                                        <div class="suggestion-item" data-city="${city || name}" style="padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #f7fafc; font-size: 14px;">
+                                            <span style="font-weight: 700; color: #2b6cb0;">${ident}</span>
+                                            <span style="color: #4a5568; font-size: 13px; margin-left: 8px;">— ${name}</span>
+                                            <span style="color: #a0aec0; font-size: 12px; margin-left: 8px;">${city || ""}, ${country || ""}</span>
+                                        </div>
+                                    `;
+                                }).join('');
+                                suggestions.style.display = "block";
+                                suggestions.querySelectorAll(".suggestion-item").forEach(item => {
+                                    item.addEventListener("click", function() {
+                                        searchInput.value = this.dataset.city;
+                                        suggestions.style.display = "none";
+                                        searchInput.focus();
+                                        currentCity = this.dataset.city;
+                                        renderNotesForCity(this.dataset.city);
+                                    });
+                                });
+                                return;
+                            }
+                        } catch (error) {
+                            console.error("SQLite error:", error);
+                        }
+                    } else {
+                        console.log("⏳ SQLite pas encore prêt...");
+                    }
+                }
+            }
             
-            suggestions.style.display = "block";
-            
-            suggestions.querySelectorAll(".suggestion-item").forEach(item => {
-                item.addEventListener("click", function() {
-                    searchInput.value = this.dataset.city;
+            // 🌐 2. PUIS WOOSMAP
+            try {
+                const response = await fetch(
+                    `https://api.woosmap.com/localities/autocomplete/?input=${encodeURIComponent(value)}&types=airport&key=${WOOSMAP_API_KEY}`
+                );
+                const data = await response.json();
+                
+                if (data && data.localities && data.localities.length > 0) {
+                    suggestions.innerHTML = data.localities.map(item => {
+                        const cityName = item.description || "";
+                        const type = item.types ? item.types.join(", ") : "";
+                        
+                        return `
+                            <div class="suggestion-item" data-city="${cityName}" style="padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #f7fafc; font-size: 14px;">
+                                <span style="font-weight: 700; color: #2b6cb0;">${cityName}</span>
+                                <span style="color: #a0aec0; font-size: 12px; margin-left: 8px;">${type}</span>
+                            </div>
+                        `;
+                    }).join('');
+                    
+                    suggestions.style.display = "block";
+                    
+                    suggestions.querySelectorAll(".suggestion-item").forEach(item => {
+                        item.addEventListener("click", function() {
+                            searchInput.value = this.dataset.city;
+                            suggestions.style.display = "none";
+                            searchInput.focus();
+                            currentCity = this.dataset.city;
+                            renderNotesForCity(this.dataset.city);
+                        });
+                        item.addEventListener("mouseenter", function() { this.style.background = "#ebf8ff"; });
+                        item.addEventListener("mouseleave", function() { this.style.background = "white"; });
+                    });
+                } else {
                     suggestions.style.display = "none";
-                    searchInput.focus();
-                    currentCity = this.dataset.city;
-                    renderNotesForCity(this.dataset.city);
-                });
-                item.addEventListener("mouseenter", function() { this.style.background = "#ebf8ff"; });
-                item.addEventListener("mouseleave", function() { this.style.background = "white"; });
-            });
-        } else {
+                }
+            } catch (error) {
+                console.error("Woosmap error:", error);
+                suggestions.style.display = "none";
+            }
+        }, 300);
+    });
+    
+    document.addEventListener("click", function(e) {
+        if (!e.target.closest("#suggestions") && e.target !== searchInput) {
             suggestions.style.display = "none";
         }
-    } catch (error) {
-        console.error("Woosmap error:", error);
-        suggestions.style.display = "none";
-    }
-}, 300);
-
-
- });   // ← Ferme searchInput.addEventListener("input", ...)
-}      
-document.addEventListener("click", function(e) {
-    if (!e.target.closest("#suggestions") && e.target !== searchInput) {
-        suggestions.style.display = "none";
-    }
-
-});
-
+    });
+}
+ 
 
     
 

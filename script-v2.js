@@ -77,6 +77,7 @@ let currentCategory = "";
 //  APP LOGIN (mot de passe global)
 
 
+
 const APP_PASSWORD = "LXICE";
 
 const appLoginScreen = document.getElementById("appLoginScreen");
@@ -121,10 +122,6 @@ appPasswordInput.addEventListener("keydown", function(e) {
 });
 
 appPasswordInput.focus();
-
-
-
-
 
 //  NAVIGATION
 
@@ -302,17 +299,12 @@ window.deleteDocument = function(id) {
     renderDocuments();
 };
 
-
-
-
-
-       // ═══════════════════════════════════════════
+       
 //  SUGGESTIONS D'AÉROPORTS (Woosmap 🇫🇷)
 // ═══════════════════════════════════════════
 
+
 const WOOSMAP_API_KEY = "woos-dd8d1dbb-df54-328f-9e5e-556984559e37";
-
-
 
 if (searchInput && suggestions) {
     let debounceTimer;
@@ -326,14 +318,14 @@ if (searchInput && suggestions) {
             return;
         }
         
+
         
 debounceTimer = setTimeout(async () => {
-     
-         
-         
+
+    
 
     // ⚡ 1. CHERCHER PAR CODE IATA (via Airport Gap)
-    if (value.length === 3) {
+    if (value.length === 3 || value.length === 4)  {
         const iataCode = value.toUpperCase();
         try {
             const response = await fetch(`https://airportgap.com/api/airports/${iataCode}`);
@@ -407,16 +399,18 @@ debounceTimer = setTimeout(async () => {
     }
 }, 300);
 
+
  });   // ← Ferme searchInput.addEventListener("input", ...)
 }      
-
-
-
 document.addEventListener("click", function(e) {
     if (!e.target.closest("#suggestions") && e.target !== searchInput) {
         suggestions.style.display = "none";
     }
+
 });
+
+
+    
 
 
 //  AJOUTER UNE DESTINATION
@@ -508,9 +502,9 @@ async function renderNotesForCity(city) {
 }
 
 
+window.showCategory = async function(city, category) {
 
-    
-    window.showCategory = async function(city, category) {
+
     currentCity = city;
     currentCategory = category;
     
@@ -566,8 +560,6 @@ cancelNoteButton.addEventListener("click", function() {
   
 
 
-    
-    //  EFFACER LA PAGE → retour neutre
     saveNoteButton.addEventListener("click", async function() {
     if (!noteAuthor.value.trim() || !noteText.value.trim()) {
         alert("Please fill in your name and the note.");

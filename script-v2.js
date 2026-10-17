@@ -518,14 +518,13 @@ saveDestinationButton.addEventListener("click", function() {
 
 
 //  NOTES PAR CATÉGORIE
-
 searchButton.addEventListener("click", async function() {
     const value = searchInput.value.trim();
     if (!value) return;
     
     const code = value.toUpperCase();
     
-    // Si c'est un code IATA (3) ou ICAO (4) → On cherche dans SQLite
+    // Si c'est un code de 3 ou 4 lettres → On cherche dans SQLite
     if ((value.length === 3 || value.length === 4) && sqliteReady && airportsDb) {
         try {
             const results = airportsDb.exec(`
@@ -538,9 +537,11 @@ searchButton.addEventListener("click", async function() {
             if (results.length > 0 && results[0].values.length > 0) {
                 const a = results[0].values[0];
                 const [ident, iata, name, city, country] = a;
+                
                 currentIata = iata || '';
                 currentIcao = ident || '';
                 currentCity = city || name;
+                
                 renderNotesForCity(currentIata, currentIcao, currentCity);
                 return;
             }
@@ -549,7 +550,7 @@ searchButton.addEventListener("click", async function() {
         }
     }
     
-    // Sinon, recherche classique par nom de ville
+    // Sinon, recherche par nom de ville
     currentIata = '';
     currentIcao = '';
     currentCity = value;

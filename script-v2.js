@@ -517,16 +517,14 @@ saveDestinationButton.addEventListener("click", function() {
 });
 
 
-//  NOTES PAR CATÉGORIE
+
+
+   //  NOTES PAR CATÉGORIE
 searchButton.addEventListener("click", async function() {
-        
     const value = searchInput.value.trim();
-     console.log("🖱️ Bouton Search cliqué, valeur:", value);
     if (!value) return;
-    
     const code = value.toUpperCase();
     
-    // Si c'est un code de 3 ou 4 lettres → On cherche dans SQLite
     if ((value.length === 3 || value.length === 4) && sqliteReady && airportsDb) {
         try {
             const results = airportsDb.exec(`
@@ -535,31 +533,20 @@ searchButton.addEventListener("click", async function() {
                 WHERE UPPER(ident) = '${code}' OR UPPER(iata_code) = '${code}'
                 LIMIT 1
             `);
-            
             if (results.length > 0 && results[0].values.length > 0) {
                 const a = results[0].values[0];
                 const [ident, iata, name, city, country] = a;
-                
-                currentIata = iata || '';
-                currentIcao = ident || '';
-                currentCity = city || name;
-                
-                renderNotesForCity(currentIata, currentIcao, currentCity);
+                console.log("✈️ Aéroport trouvé dans SQLite:", { ident, iata, city });
+                renderNotesForCity(iata || '', ident || '', city || name);
                 return;
             }
-        } catch (e) {
-            console.error("SQLite error:", e);
-        }
+        } catch (e) { console.error("SQLite error:", e); }
     }
-    
-    // Sinon, recherche par nom de ville
-    currentIata = '';
-    currentIcao = '';
-    currentCity = value;
-    renderNotesForCity(currentIata, currentIcao, currentCity);
+    // Si ce n'est pas un code, on cherche par ville
+    renderNotesForCity('', '', value);
 });
 
-async function renderNotesForCity(city) {
+async function renderNotesForCity(iata, icao, city) {
     const categories = [
         { name: "Airport", icon: "🛫" },
         { name: "Hotels", icon: "🏨" },
@@ -569,17 +556,21 @@ async function renderNotesForCity(city) {
         { name: "Other", icon: "📌" }
     ];
     
-    const { data: cityNotes, error } = await supabaseClient
-        .from('notes')
-        .select('*')
-        .ilike('city', city);
+    let query = supabaseClient.from('notes').select('*');
+    let conditions = [];
     
-    if (error) {
-        console.error("Supabase error:", error);
-        return;
+    if (iata) conditions.push(`iata_code.eq.${iata}`);
+    if (icao) conditions.push(`icao_code.eq.${icao}`);
+    if (city) conditions.push(`city.ilike.%${city}%`);
+    
+    if (conditions.length > 0) {
+        query = query.or(conditions.join(','));
     }
     
-    let html = `<h3 style="margin-bottom: 20px;">📍 ${city}</h3>`;
+    const { data: cityNotes, error } = await query;
+    if (error) { console.error("Supabase error:", error); return; }
+    
+    let html = `<h3 style="margin-bottom: 20px;">📍 ${city || icao || iata}</h3>`;
     
     categories.forEach(cat => {
         const count = cityNotes.filter(n => n.category === cat.name).length;
@@ -588,7 +579,7 @@ async function renderNotesForCity(city) {
             : `<span style="color: #a0aec0; font-size: 12px; margin-left: 8px;">empty</span>`;
         
         html += `
-            <div onclick="showCategory('${city}', '${cat.name}')" style="background: white; border: 2px solid #e2e8f0; border-radius: 12px; padding: 16px 20px; margin-bottom: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;" onmouseover="this.style.borderColor='#4299e1';" onmouseout="this.style.borderColor='#e2e8f0';">
+            <div onclick="showCategory('${city}', '${cat.name}', '${iata}', '${icao}')" style="background: white; border: 2px solid #e2e8f0; border-radius: 12px; padding: 16px 20px; margin-bottom: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;" onmouseover="this.style.borderColor='#4299e1';" onmouseout="this.style.borderColor='#e2e8f0';">
                 <span style="font-size: 16px; font-weight: 600; color: #2b6cb0;">${cat.icon} ${cat.name}</span>
                 <span style="display: flex; align-items: center;">${badge}<span style="margin-left: 12px; color: #a0aec0; font-size: 20px;">›</span></span>
             </div>
@@ -597,8 +588,6 @@ async function renderNotesForCity(city) {
     
     notesList.innerHTML = html;
 }
-
-
 window.showCategory = async function(city, category) {
 
 

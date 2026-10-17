@@ -519,7 +519,9 @@ saveDestinationButton.addEventListener("click", function() {
 
 //  NOTES PAR CATÉGORIE
 searchButton.addEventListener("click", async function() {
+        
     const value = searchInput.value.trim();
+     console.log("🖱️ Bouton Search cliqué, valeur:", value);
     if (!value) return;
     
     const code = value.toUpperCase();

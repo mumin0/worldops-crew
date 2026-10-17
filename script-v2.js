@@ -545,7 +545,6 @@ searchButton.addEventListener("click", async function() {
     // Si ce n'est pas un code, on cherche par ville
     renderNotesForCity('', '', value);
 });
-
 async function renderNotesForCity(iata, icao, city) {
     const categories = [
         { name: "Airport", icon: "🛫" },
@@ -561,7 +560,12 @@ async function renderNotesForCity(iata, icao, city) {
     
     if (iata) conditions.push(`iata_code.eq.${iata}`);
     if (icao) conditions.push(`icao_code.eq.${icao}`);
-    if (city) conditions.push(`city.ilike.%${city}%`);
+    
+    if (city) {
+        // On coupe à la virgule pour éviter l'erreur (ex: "Nice, Alpes-Maritimes" -> "Nice")
+        const cleanCity = city.split(',')[0].trim();
+        conditions.push(`city.ilike.%${cleanCity}%`);
+    }
     
     if (conditions.length > 0) {
         query = query.or(conditions.join(','));

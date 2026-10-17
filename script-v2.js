@@ -519,11 +519,41 @@ saveDestinationButton.addEventListener("click", function() {
 
 //  NOTES PAR CATÉGORIE
 
-searchButton.addEventListener("click", function() {
-    const city = searchInput.value.trim();
-    if (!city) return;
-    currentCity = city;
-    renderNotesForCity(city);
+searchButton.addEventListener("click", async function() {
+    const value = searchInput.value.trim();
+    if (!value) return;
+    
+    const code = value.toUpperCase();
+    
+    // Si c'est un code IATA (3) ou ICAO (4) → On cherche dans SQLite
+    if ((value.length === 3 || value.length === 4) && sqliteReady && airportsDb) {
+        try {
+            const results = airportsDb.exec(`
+                SELECT ident, iata_code, name, municipality, iso_country
+                FROM airports
+                WHERE UPPER(ident) = '${code}' OR UPPER(iata_code) = '${code}'
+                LIMIT 1
+            `);
+            
+            if (results.length > 0 && results[0].values.length > 0) {
+                const a = results[0].values[0];
+                const [ident, iata, name, city, country] = a;
+                currentIata = iata || '';
+                currentIcao = ident || '';
+                currentCity = city || name;
+                renderNotesForCity(currentIata, currentIcao, currentCity);
+                return;
+            }
+        } catch (e) {
+            console.error("SQLite error:", e);
+        }
+    }
+    
+    // Sinon, recherche classique par nom de ville
+    currentIata = '';
+    currentIcao = '';
+    currentCity = value;
+    renderNotesForCity(currentIata, currentIcao, currentCity);
 });
 
 async function renderNotesForCity(city) {
@@ -625,7 +655,6 @@ cancelNoteButton.addEventListener("click", function() {
 });
   
 
-
 saveNoteButton.addEventListener("click", async function() {
     if (!noteAuthor.value.trim() || !noteText.value.trim()) {
         alert("Please fill in your name and the note.");
@@ -634,12 +663,13 @@ saveNoteButton.addEventListener("click", async function() {
     
     const newNote = {
         city: currentCity,
-        iata_code: currentIata, // <-- Enregistre le code IATA
-        icao_code: currentIcao, // <-- Enregistre le code ICAO
+        iata_code: currentIata, 
+        icao_code: currentIcao, 
         category: noteCategory.value,
         author: noteAuthor.value.trim(),
         text: noteText.value.trim()
     };
+    
     const { error } = await supabaseClient
         .from('notes')
         .insert([newNote]);
@@ -659,14 +689,6 @@ saveNoteButton.addEventListener("click", async function() {
     notesList.innerHTML = "";
     searchInput.focus();
 });
-
-window.deleteNote = function(id) {
-    if (!confirm("Delete this note?")) return;
-    notes = notes.filter(n => n.id !== id);
-    localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(notes));
-    if (currentCity) renderNotesForCity(currentCity);
-};
-
 
 //  DÉMARRAGE
 

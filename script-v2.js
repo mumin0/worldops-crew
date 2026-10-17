@@ -592,27 +592,27 @@ async function renderNotesForCity(iata, icao, city) {
     
     notesList.innerHTML = html;
 }
-window.showCategory = async function(city, category) {
 
-
-    currentCity = city;
-    currentCategory = category;
+window.showCategory = async function(city, category, iata, icao) {
+    currentCity = city; currentIata = iata; currentIcao = icao; currentCategory = category;
     
-    const { data: categoryNotes, error } = await supabaseClient
-        .from('notes')
-        .select('*')
-        .ilike('city', city)
-        .eq('category', category);
+    let query = supabaseClient.from('notes').select('*');
+    let conditions = [];
     
-    if (error) {
-        console.error("Supabase error:", error);
-        return;
-    }
+    if (iata) conditions.push(`iata_code.eq.${iata}`);
+    if (icao) conditions.push(`icao_code.eq.${icao}`);
+    if (city) conditions.push(`city.ilike.%${city}%`);
+    
+    if (conditions.length > 0) query = query.or(conditions.join(','));
+    query = query.eq('category', category);
+    
+    const { data: categoryNotes, error } = await query;
+    if (error) { console.error("Supabase error:", error); return; }
     
     const icons = { "Airport": "🛫", "Hotels": "🏨", "Catering": "🍽️", "Handling": "🛫", "Language": "🗣️", "Other": "📌" };
     
     let html = `
-        <button onclick="renderNotesForCity('${city}')" style="background: #e2e8f0; color: #2d3748; margin-bottom: 15px;">← Back to ${city}</button>
+        <button onclick="renderNotesForCity('${iata}', '${icao}', '${city}')" style="background: #e2e8f0; color: #2d3748; margin-bottom: 15px;">← Back to ${city}</button>
         <h3 style="margin-bottom: 20px;">${icons[category]} ${category} — ${city}</h3>
     `;
     
@@ -629,10 +629,9 @@ window.showCategory = async function(city, category) {
         });
     }
     
-    html += `<button onclick="openAddNote('${city}', '${category}')" style="margin-top: 20px;">➕ Add Note for ${category}</button>`;
+    html += `<button onclick="openAddNote('${city}', '${category}', '${iata}', '${icao}')" style="margin-top: 20px;">➕ Add Note for ${category}</button>`;
     notesList.innerHTML = html;
 };
-
 window.openAddNote = function(city, category, iata, icao) {
     currentCity = city;
     currentIata = iata;

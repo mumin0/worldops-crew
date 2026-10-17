@@ -607,8 +607,10 @@ window.showCategory = async function(city, category) {
     notesList.innerHTML = html;
 };
 
-window.openAddNote = function(city, category) {
+window.openAddNote = function(city, category, iata, icao) {
     currentCity = city;
+    currentIata = iata;
+    currentIcao = icao;
     noteCity.value = city;
     if (category) noteCategory.value = category;
     addNoteForm.style.display = "block";
@@ -624,7 +626,7 @@ cancelNoteButton.addEventListener("click", function() {
   
 
 
-    saveNoteButton.addEventListener("click", async function() {
+saveNoteButton.addEventListener("click", async function() {
     if (!noteAuthor.value.trim() || !noteText.value.trim()) {
         alert("Please fill in your name and the note.");
         return;
@@ -632,11 +634,12 @@ cancelNoteButton.addEventListener("click", function() {
     
     const newNote = {
         city: currentCity,
+        iata_code: currentIata, // <-- Enregistre le code IATA
+        icao_code: currentIcao, // <-- Enregistre le code ICAO
         category: noteCategory.value,
         author: noteAuthor.value.trim(),
         text: noteText.value.trim()
     };
-    
     const { error } = await supabaseClient
         .from('notes')
         .insert([newNote]);
@@ -654,8 +657,6 @@ cancelNoteButton.addEventListener("click", function() {
     
     searchInput.value = "";
     notesList.innerHTML = "";
-    currentCity = "";
-    currentCategory = "";
     searchInput.focus();
 });
 

@@ -545,27 +545,30 @@ searchButton.addEventListener("click", async function() {
     // Si ce n'est pas un code, on cherche par ville
     renderNotesForCity('', '', value);
 });
-async function renderNotesForCity(iata, icao, city) {
+
+    
+    
+   async function renderNotesForCity(iata, icao, city) {
+    // Si un seul argument est passé, on le traite comme la ville
+    if (!icao && !city) { city = iata; iata = ''; }
+
     const categories = [
-        { name: "Airport", icon: "🛫" },
-        { name: "Hotels", icon: "🏨" },
-        { name: "Catering", icon: "🍽️" },
-        { name: "Handling", icon: "🛫" },
-        { name: "Language", icon: "🗣️" },
-        { name: "Other", icon: "📌" }
+        { name: "Airport", icon: "🛫" }, { name: "Hotels", icon: "🏨" },
+        { name: "Catering", icon: "🍽️" }, { name: "Handling", icon: "🛫" },
+        { name: "Language", icon: "🗣️" }, { name: "Other", icon: "📌" }
     ];
     
     let query = supabaseClient.from('notes').select('*');
     let conditions = [];
     
-    if (iata) conditions.push(`iata_code.eq.${iata}`);
-    if (icao) conditions.push(`icao_code.eq.${icao}`);
     
-    if (city) {
-        // On coupe à la virgule pour éviter l'erreur (ex: "Nice, Alpes-Maritimes" -> "Nice")
-        const cleanCity = city.split(',')[0].trim();
-        conditions.push(`city.ilike.%${cleanCity}%`);
-    }
+    const cleanIata = iata ? iata.split(',')[0].trim() : '';
+    const cleanIcao = icao ? icao.split(',')[0].trim() : '';
+    const cleanCity = city ? city.split(',')[0].trim() : '';
+    
+    if (cleanIata) conditions.push(`iata_code.eq.${cleanIata}`);
+    if (cleanIcao) conditions.push(`icao_code.eq.${cleanIcao}`);
+    if (cleanCity) conditions.push(`city.ilike.%${cleanCity}%`);
     
     if (conditions.length > 0) {
         query = query.or(conditions.join(','));
@@ -574,7 +577,7 @@ async function renderNotesForCity(iata, icao, city) {
     const { data: cityNotes, error } = await query;
     if (error) { console.error("Supabase error:", error); return; }
     
-    let html = `<h3 style="margin-bottom: 20px;">📍 ${city || icao || iata}</h3>`;
+    let html = `<h3 style="margin-bottom: 20px;">📍 ${cleanCity || cleanIcao || cleanIata}</h3>`;
     
     categories.forEach(cat => {
         const count = cityNotes.filter(n => n.category === cat.name).length;
@@ -583,13 +586,12 @@ async function renderNotesForCity(iata, icao, city) {
             : `<span style="color: #a0aec0; font-size: 12px; margin-left: 8px;">empty</span>`;
         
         html += `
-            <div onclick="showCategory('${city}', '${cat.name}', '${iata}', '${icao}')" style="background: white; border: 2px solid #e2e8f0; border-radius: 12px; padding: 16px 20px; margin-bottom: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;" onmouseover="this.style.borderColor='#4299e1';" onmouseout="this.style.borderColor='#e2e8f0';">
+            <div onclick="showCategory('${cleanCity}', '${cat.name}', '${cleanIata}', '${cleanIcao}')" style="background: white; border: 2px solid #e2e8f0; border-radius: 12px; padding: 16px 20px; margin-bottom: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;" onmouseover="this.style.borderColor='#4299e1';" onmouseout="this.style.borderColor='#e2e8f0';">
                 <span style="font-size: 16px; font-weight: 600; color: #2b6cb0;">${cat.icon} ${cat.name}</span>
                 <span style="display: flex; align-items: center;">${badge}<span style="margin-left: 12px; color: #a0aec0; font-size: 20px;">›</span></span>
             </div>
         `;
     });
-    
     notesList.innerHTML = html;
 }
 
@@ -599,9 +601,14 @@ window.showCategory = async function(city, category, iata, icao) {
     let query = supabaseClient.from('notes').select('*');
     let conditions = [];
     
-    if (iata) conditions.push(`iata_code.eq.${iata}`);
-    if (icao) conditions.push(`icao_code.eq.${icao}`);
-    if (city) conditions.push(`city.ilike.%${city}%`);
+    
+    const cleanIata = iata ? iata.split(',')[0].trim() : '';
+    const cleanIcao = icao ? icao.split(',')[0].trim() : '';
+    const cleanCity = city ? city.split(',')[0].trim() : '';
+    
+    if (cleanIata) conditions.push(`iata_code.eq.${cleanIata}`);
+    if (cleanIcao) conditions.push(`icao_code.eq.${cleanIcao}`);
+    if (cleanCity) conditions.push(`city.ilike.%${cleanCity}%`);
     
     if (conditions.length > 0) query = query.or(conditions.join(','));
     query = query.eq('category', category);
@@ -612,8 +619,8 @@ window.showCategory = async function(city, category, iata, icao) {
     const icons = { "Airport": "🛫", "Hotels": "🏨", "Catering": "🍽️", "Handling": "🛫", "Language": "🗣️", "Other": "📌" };
     
     let html = `
-        <button onclick="renderNotesForCity('${iata}', '${icao}', '${city}')" style="background: #e2e8f0; color: #2d3748; margin-bottom: 15px;">← Back to ${city}</button>
-        <h3 style="margin-bottom: 20px;">${icons[category]} ${category} — ${city}</h3>
+        <button onclick="renderNotesForCity('${cleanIata}', '${cleanIcao}', '${cleanCity}')" style="background: #e2e8f0; color: #2d3748; margin-bottom: 15px;">← Back to ${cleanCity}</button>
+        <h3 style="margin-bottom: 20px;">${icons[category]} ${category} — ${cleanCity}</h3>
     `;
     
     if (categoryNotes.length === 0) {
@@ -629,9 +636,12 @@ window.showCategory = async function(city, category, iata, icao) {
         });
     }
     
-    html += `<button onclick="openAddNote('${city}', '${category}', '${iata}', '${icao}')" style="margin-top: 20px;">➕ Add Note for ${category}</button>`;
+    html += `<button onclick="openAddNote('${cleanCity}', '${category}', '${cleanIata}', '${cleanIcao}')" style="margin-top: 20px;">➕ Add Note for ${category}</button>`;
     notesList.innerHTML = html;
 };
+    
+    
+       
 window.openAddNote = function(city, category, iata, icao) {
     currentCity = city;
     currentIata = iata;

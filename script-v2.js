@@ -3,7 +3,7 @@
 //  WORLDOPS - SCRIPT COMPLET
 
 // ─── Config ───
-const PASSWORD = "G650Crew";
+const PASSWORD = window.CONFIG.PASSWORD;
 // ─── Supabase ───
 const SUPABASE_URL = "https://qgtqcfaljzjnykdyxatg.supabase.co";  
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFndHFjZmFsanpqbnlrZHl4YXRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4NzU5NTAsImV4cCI6MjEwNzQ1MTk1MH0.VFgatFTipJlg3aJktO0WIO_uktgKTw_SOLdyPhECCIc";
@@ -13,7 +13,7 @@ const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const STORAGE_KEY = "worldops_documents";
 const NOTES_STORAGE_KEY = "worldops_notes";
 const CITIES_STORAGE_KEY = "worldops_custom_cities";
-const SMARTPHONE_API_KEY = "M5Z3rL8JIIhPGcMuxSw1RGTMEVyg7XWqB8G%2FSF6QphUPdcQsj0c5GHhSvcOHWUAd";
+const SMARTPHONE_API_KEY = window.CONFIG.SMARTPHONE_API_KEY;
 
 // ─── Sections ───
 const public = document.getElementById("public");
@@ -70,7 +70,8 @@ let notes = JSON.parse(localStorage.getItem(NOTES_STORAGE_KEY)) || [];
 let customCities = JSON.parse(localStorage.getItem(CITIES_STORAGE_KEY)) || [];
 let currentCity = "";
 let currentCategory = "";
-
+let currentIata = "";       
+let currentIcao = ""; 
 
 
 //  SQLITE - Chargement en arrière-plan
@@ -104,7 +105,7 @@ let sqliteReady = false;
 
 
 
-const APP_PASSWORD = "LXICE";
+const APP_PASSWORD = window.CONFIG.APP_PASSWORD;
 
 const appLoginScreen = document.getElementById("appLoginScreen");
 const appPasswordInput = document.getElementById("appPasswordInput");
@@ -174,6 +175,7 @@ menuPublic.addEventListener("click", function() {
     notesList.innerHTML = "";
     currentCity = "";
     currentCategory = "";
+     
     addNoteForm.style.display = "none";
 });
 
@@ -327,135 +329,138 @@ window.deleteDocument = function(id) {
 
        
 //  SUGGESTIONS D'AÉROPORTS (Woosmap 🇫🇷)
-// ═══════════════════════════════════════════
 
 
-const WOOSMAP_API_KEY = "woos-dd8d1dbb-df54-328f-9e5e-556984559e37";
+
+const WOOSMAP_API_KEY = window.CONFIG.WOOSMAP_API_KEY;
 
     if (searchInput && suggestions) {
     let debounceTimer;
-    
+
+    // Handler de clic partagé — préserve IATA + ICAO + ville
+    function attachSuggestionClicks() {
+        suggestions.querySelectorAll(".suggestion-item").forEach(item => {
+            item.addEventListener("click", function() {
+                const city = this.dataset.city || "";
+                const iata = this.dataset.iata || "";
+                const icao = this.dataset.icao || "";
+
+                searchInput.value = city;
+                suggestions.style.display = "none";
+                searchInput.focus();
+
+                currentCity = city;
+                currentIata = iata;
+                currentIcao = icao;
+
+                renderNotesForCity(iata, icao, city);
+            });
+            item.addEventListener("mouseenter", function() { this.style.background = "#ebf8ff"; });
+            item.addEventListener("mouseleave", function() { this.style.background = "white"; });
+        });
+    }
+
     searchInput.addEventListener("input", function() {
         clearTimeout(debounceTimer);
         const value = this.value.trim();
-        
+
         if (value.length < 2) {
             suggestions.style.display = "none";
             return;
         }
-        
+
         debounceTimer = setTimeout(async () => {
-            
-            // ⚡ RECHERCHE PAR CODE (IATA ou ICAO)
-            if (value.length === 3 || value.length === 4) {
-                const code = value.toUpperCase();
-                
-                // ─── CAS 1 : Code de 3 lettres (IATA) → Airport Gap ───
-                if (value.length === 3) {
-                    try {
-                        const response = await fetch(`https://airportgap.com/api/airports/${code}`);
-                        if (response.ok) {
-                            const data = await response.json();
-                            const airport = data.data.attributes;
-                            suggestions.innerHTML = `
-                                <div class="suggestion-item" data-city="${airport.city}" style="padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #f7fafc; font-size: 14px;">
-                                    <span style="font-weight: 700; color: #2b6cb0;">${airport.iata}</span>
-                                    <span style="color: #4a5568; font-size: 13px; margin-left: 8px;">— ${airport.name}</span>
-                                    <span style="color: #a0aec0; font-size: 12px; margin-left: 8px;">${airport.city}, ${airport.country}</span>
+            const code = value.toUpperCase();
+            const isCodeLike = value.length === 3 || value.length === 4;
+
+            // ⚡ 1. CODES — SQLite d'abord (IATA + ICAO + LID)
+            if (isCodeLike && sqliteReady && airportsDb) {
+                try {
+                    const results = airportsDb.exec(
+                        `SELECT ident, iata_code, name, municipality, iso_country
+                         FROM airports
+                         WHERE UPPER(ident) = ? OR UPPER(iata_code) = ?
+                         LIMIT 5`,
+                        [code, code]
+                    );
+
+                    if (results.length > 0 && results[0].values.length > 0) {
+                        const airports = results[0].values;
+                        suggestions.innerHTML = airports.map(a => {
+                            const [ident, iata, name, city, country] = a;
+                            return `
+                                <div class="suggestion-item"
+                                     data-city="${city || name || ''}"
+                                     data-iata="${iata || ''}"
+                                     data-icao="${ident || ''}"
+                                     style="padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #f7fafc; font-size: 14px;">
+                                    <span style="font-weight: 700; color: #2b6cb0;">${iata || ident || ''}</span>
+                                    <span style="color: #4a5568; font-size: 13px; margin-left: 8px;">— ${name || ''}</span>
+                                    <span style="color: #a0aec0; font-size: 12px; margin-left: 8px;">${city || ''}, ${country || ''}</span>
                                 </div>
                             `;
-                            suggestions.style.display = "block";
-                            suggestions.querySelector(".suggestion-item").addEventListener("click", function() {
-                                searchInput.value = this.dataset.city;
-                                suggestions.style.display = "none";
-                                searchInput.focus();
-                                currentCity = this.dataset.city;
-                                renderNotesForCity(this.dataset.city);
-                            });
-                            return;
-                        }
-                    } catch (error) {
-                        console.error("Airport Gap error:", error);
+                        }).join('');
+                        suggestions.style.display = "block";
+                        attachSuggestionClicks();
+                        return;
                     }
-                }
-                
-                // ─── CAS 2 : Code de 4 lettres (ICAO) → SQLite ───
-                if (value.length === 4) {
-                    if (sqliteReady && airportsDb) {
-                        try {
-                            const results = airportsDb.exec(`
-                                SELECT ident, iata_code, name, municipality, iso_country
-                                FROM airports
-                                WHERE UPPER(ident) = '${code}' OR UPPER(iata_code) = '${code}'
-                                LIMIT 5
-                            `);
-                            
-                            if (results.length > 0 && results[0].values.length > 0) {
-                                const airports = results[0].values;
-                                suggestions.innerHTML = airports.map(a => {
-                                    const [ident, iata, name, city, country] = a;
-                                    return `
-                                        <div class="suggestion-item" data-city="${city || name}" style="padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #f7fafc; font-size: 14px;">
-                                            <span style="font-weight: 700; color: #2b6cb0;">${ident}</span>
-                                            <span style="color: #4a5568; font-size: 13px; margin-left: 8px;">— ${name}</span>
-                                            <span style="color: #a0aec0; font-size: 12px; margin-left: 8px;">${city || ""}, ${country || ""}</span>
-                                        </div>
-                                    `;
-                                }).join('');
-                                suggestions.style.display = "block";
-                                suggestions.querySelectorAll(".suggestion-item").forEach(item => {
-                                    item.addEventListener("click", function() {
-                                        searchInput.value = this.dataset.city;
-                                        suggestions.style.display = "none";
-                                        searchInput.focus();
-                                        currentCity = this.dataset.city;
-                                        renderNotesForCity(this.dataset.city);
-                                    });
-                                });
-                                return;
-                            }
-                        } catch (error) {
-                            console.error("SQLite error:", error);
-                        }
-                    } else {
-                        console.log("⏳ SQLite pas encore prêt...");
-                    }
+                } catch (error) {
+                    console.error("SQLite error:", error);
                 }
             }
-            
-            // 🌐 2. PUIS WOOSMAP
+
+            // ⚡ 2. FALLBACK AirportGap (IATA non trouvé en SQLite)
+            if (value.length === 3) {
+                try {
+                    const response = await fetch(`https://airportgap.com/api/airports/${code}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        const airport = data.data.attributes;
+                        suggestions.innerHTML = `
+                            <div class="suggestion-item"
+                                 data-city="${airport.city || ''}"
+                                 data-iata="${airport.iata || ''}"
+                                 data-icao="${airport.icao || ''}"
+                                 style="padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #f7fafc; font-size: 14px;">
+                                <span style="font-weight: 700; color: #2b6cb0;">${airport.iata}</span>
+                                <span style="color: #4a5568; font-size: 13px; margin-left: 8px;">— ${airport.name}</span>
+                                <span style="color: #a0aec0; font-size: 12px; margin-left: 8px;">${airport.city || ''}, ${airport.country || ''}</span>
+                            </div>
+                        `;
+                        suggestions.style.display = "block";
+                        attachSuggestionClicks();
+                        return;
+                    }
+                    // 404 = pas une erreur → on continue vers Woosmap
+                } catch (error) {
+                    console.error("AirportGap error:", error);
+                }
+            }
+
+            // 🌐 3. WOOSMAP — recherche texte (ville)
             try {
                 const response = await fetch(
                     `https://api.woosmap.com/localities/autocomplete/?input=${encodeURIComponent(value)}&types=airport&key=${WOOSMAP_API_KEY}`
                 );
                 const data = await response.json();
-                
+
                 if (data && data.localities && data.localities.length > 0) {
                     suggestions.innerHTML = data.localities.map(item => {
                         const cityName = item.description || "";
                         const type = item.types ? item.types.join(", ") : "";
-                        
                         return `
-                            <div class="suggestion-item" data-city="${cityName}" style="padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #f7fafc; font-size: 14px;">
+                            <div class="suggestion-item"
+                                 data-city="${cityName}"
+                                 data-iata=""
+                                 data-icao=""
+                                 style="padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #f7fafc; font-size: 14px;">
                                 <span style="font-weight: 700; color: #2b6cb0;">${cityName}</span>
                                 <span style="color: #a0aec0; font-size: 12px; margin-left: 8px;">${type}</span>
                             </div>
                         `;
                     }).join('');
-                    
                     suggestions.style.display = "block";
-                    
-                    suggestions.querySelectorAll(".suggestion-item").forEach(item => {
-                        item.addEventListener("click", function() {
-                            searchInput.value = this.dataset.city;
-                            suggestions.style.display = "none";
-                            searchInput.focus();
-                            currentCity = this.dataset.city;
-                            renderNotesForCity(this.dataset.city);
-                        });
-                        item.addEventListener("mouseenter", function() { this.style.background = "#ebf8ff"; });
-                        item.addEventListener("mouseleave", function() { this.style.background = "white"; });
-                    });
+                    attachSuggestionClicks();
                 } else {
                     suggestions.style.display = "none";
                 }
@@ -465,14 +470,13 @@ const WOOSMAP_API_KEY = "woos-dd8d1dbb-df54-328f-9e5e-556984559e37";
             }
         }, 300);
     });
-    
+
     document.addEventListener("click", function(e) {
         if (!e.target.closest("#suggestions") && e.target !== searchInput) {
             suggestions.style.display = "none";
         }
     });
 }
- 
 
     
 
@@ -519,30 +523,32 @@ saveDestinationButton.addEventListener("click", function() {
 
 
 
-   //  NOTES PAR CATÉGORIE
-searchButton.addEventListener("click", async function() {
+ searchButton.addEventListener("click", async function() {
     const value = searchInput.value.trim();
     if (!value) return;
     const code = value.toUpperCase();
-    
+
     if ((value.length === 3 || value.length === 4) && sqliteReady && airportsDb) {
         try {
-            const results = airportsDb.exec(`
-                SELECT ident, iata_code, name, municipality, iso_country
-                FROM airports
-                WHERE UPPER(ident) = '${code}' OR UPPER(iata_code) = '${code}'
-                LIMIT 1
-            `);
+            const results = airportsDb.exec(
+                `SELECT ident, iata_code, name, municipality, iso_country
+                 FROM airports
+                 WHERE UPPER(ident) = ? OR UPPER(iata_code) = ?
+                 LIMIT 1`,
+                [code, code]
+            );
             if (results.length > 0 && results[0].values.length > 0) {
-                const a = results[0].values[0];
-                const [ident, iata, name, city, country] = a;
+                const [ident, iata, name, city, country] = results[0].values[0];
                 console.log("✈️ Aéroport trouvé dans SQLite:", { ident, iata, city });
-                renderNotesForCity(iata || '', ident || '', city || name);
+                currentIata = iata || '';
+                currentIcao = ident || '';
+                currentCity = city || name || '';
+                renderNotesForCity(iata || '', ident || '', city || name || '');
                 return;
             }
         } catch (e) { console.error("SQLite error:", e); }
     }
-    // Si ce n'est pas un code, on cherche par ville
+    // Pas un code → recherche par ville
     renderNotesForCity('', '', value);
 });
 

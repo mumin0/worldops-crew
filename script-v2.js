@@ -355,7 +355,7 @@ window.deleteDocument = function(id) {
             item.addEventListener("mouseleave", function() { this.style.background = "white"; });
         });
     }
-
+    let debounceTimer; 
     searchInput.addEventListener("input", function() {
         clearTimeout(debounceTimer);
         const value = this.value.trim();

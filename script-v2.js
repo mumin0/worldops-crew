@@ -3,7 +3,7 @@
 //  WORLDOPS - SCRIPT COMPLET
 
 // ─── Config ───
-const PASSWORD = window.CONFIG.PASSWORD;
+const PASSWORD = window.CONFIG?.PASSWORD || "G650Crew";
 // ─── Supabase ───
 const SUPABASE_URL = "https://qgtqcfaljzjnykdyxatg.supabase.co";  
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFndHFjZmFsanpqbnlrZHl4YXRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4NzU5NTAsImV4cCI6MjEwNzQ1MTk1MH0.VFgatFTipJlg3aJktO0WIO_uktgKTw_SOLdyPhECCIc";
@@ -13,8 +13,8 @@ const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const STORAGE_KEY = "worldops_documents";
 const NOTES_STORAGE_KEY = "worldops_notes";
 const CITIES_STORAGE_KEY = "worldops_custom_cities";
-const SMARTPHONE_API_KEY = window.CONFIG.SMARTPHONE_API_KEY;
-
+const SMARTPHONE_API_KEY = window.CONFIG?.SMARTPHONE_API_KEY || "M5Z3rL8JIIhPGcMuxSw1RGTMEVyg7XWqB8G%2FSF6QphUPdcQsj0c5GHhSvcOHWUAd";
+const WOOSMAP_API_KEY = window.CONFIG?.WOOSMAP_API_KEY || "woos-dd8d1dbb-df54-328f-9e5e-556984559e37";
 // ─── Sections ───
 const public = document.getElementById("public");
 const login = document.getElementById("login");
@@ -105,7 +105,7 @@ let sqliteReady = false;
 
 
 
-const APP_PASSWORD = window.CONFIG.APP_PASSWORD;
+const APP_PASSWORD = window.CONFIG?.APP_PASSWORD || "LXICE";
 
 const appLoginScreen = document.getElementById("appLoginScreen");
 const appPasswordInput = document.getElementById("appPasswordInput");
@@ -332,10 +332,6 @@ window.deleteDocument = function(id) {
 
 
 
-const WOOSMAP_API_KEY = window.CONFIG.WOOSMAP_API_KEY;
-
-    if (searchInput && suggestions) {
-    let debounceTimer;
 
     // Handler de clic partagé — préserve IATA + ICAO + ville
     function attachSuggestionClicks() {
@@ -476,7 +472,7 @@ const WOOSMAP_API_KEY = window.CONFIG.WOOSMAP_API_KEY;
             suggestions.style.display = "none";
         }
     });
-}
+
 
     
 

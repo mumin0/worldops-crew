@@ -1,32 +1,5 @@
-<p align="center">
-  <img src="icon-512.png" alt="WorldOps Logo" width="180">
-</p>
 
-<h1 align="center">🛩️ WorldOps</h1>
-
-<p align="center">
-  <strong>Crew Operations Platform</strong><br>
-  <em>A Swiss-made web application for flight crews</em>
-</p>
-
-<p align="center">
-  <a href="https://worldops.ch">
-    <img src="https://img.shields.io/badge/Live-worldops.ch-blue?style=for-the-badge" alt="Live App">
-  </a>
-  <a href="LICENSE">
-    <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License">
-  </a>
-  <a href="https://worldops.ch">
-    <img src="https://img.shields.io/badge/Made%20in-Switzerland-red?style=for-the-badge" alt="Swiss Made">
-  </a>
-</p>
-
-<p align="center">
-  🌍 <a href="https://worldops.ch">Live App</a> •
-  ✨ <a href="#features">Features</a> •
-  🏗️ <a href="#architecture">Architecture</a> •
-  🚀 <a href="#getting-started">Getting Started</a>
-</p>
+<p align="center"> <img src="icon-512.png" alt="WorldOps Logo" width="180"> </p><h1 align="center">🛩️ WorldOps</h1><p align="center"> <strong>Crew Operations Platform</strong><br> <em>A web application for flight crews</em> </p><p align="center"> <a href="https://worldops.ch"> <img src="https://img.shields.io/badge/Live-worldops.ch-blue?style=for-the-badge" alt="Live App"> </a> <a href="LICENSE"> <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License"> </a> </p><p align="center"> 🌍 <a href="https://worldops.ch">Live App</a> • ✨ <a href="#features">Features</a> • 🏗️ <a href="#architecture">Architecture</a> • 🚀 <a href="#getting-started">Getting Started</a> </p>
 
 ---
 
@@ -88,20 +61,20 @@ WorldOps runs entirely in the browser. No custom backend server is needed.
 
 ## Technology Stack
 
-**Frontend**
-HTML5, CSS3, JavaScript ES6+
+**Base**
+HTML, CSS, JavaScript 
 
 **Data (Browser)**
-sql.js (WebAssembly SQLite) + OurAirports (85,000+ records)
+sql.js + OurAirports (85,000+ records)
 
-**Data (Cloud)**
+**Data**
 Supabase (PostgreSQL, Frankfurt 🇪🇺)
 
 **APIs**
-Woosmap 🇫🇷 (city autocomplete), Airport Gap (IATA lookup)
+Woosmap 🇫🇷 (city autocomplete), Airport Gap 
 
 **Hosting**
-GitHub Pages (current), Infomaniak 🇨🇭 (roadmap)
+GitHub Pages (current)
 
 ---
 
@@ -155,71 +128,19 @@ Migration to Infomaniak (Geneva) for full data sovereignty, in the future.
 
 ---
 
-## Future Improvements
-
-WorldOps is designed to evolve into a complete crew operations platform. Here is the roadmap:
-
-### 🎯 Phase 1 — Short-term (Next 3 months)
-
-**Authentication & User Management**
-- [ ] Individual logins for each crew member (email + password).
-- [ ] Password recovery via email.
-- [ ] User profiles with photo and role.
-
-**Document Management**
-- [ ] Stock Onboard integration (Excel file → in-app table).
-- [ ] Document sending to embassies via secure links.
-- [ ] Visa renewal reminders via email.
-
-**Notifications**
-- [ ] Push notifications for visa expiry (30/60/90 days before).
-- [ ] Email alerts to crew members.
-- [ ] In-app notifications for new destination notes.
-
-### 🚀 Phase 2 — Mid-term (6 months)
-
-**🥃 Alcohol Stock Onboard (AI-powered)**
-- [ ] Photo recognition of bottle labels — crew takes a picture, and the system automatically identifies the brand and enters the details.
-- [ ] Automatic bottle counting with a simple **+1 / -1** interface — tap to update the count in real time.
-- [ ] Low stock alerts when bottles are running low.
-
-
-
-**🔧 Maintenance Module**
-- [ ] Issue reporting with photo upload — crew can document any problem on board (broken seat, faulty light, etc.).
-- [ ] Maintenance request — send photos and details directly to the maintenance team.
-- [ ] Status tracking: Reported → In Progress → Resolved.
-
-
-
-**Infrastructure**
-- [ ] Migration to Infomaniak (100% Swiss hosting 🇨🇭) in the future.
-- [ ] Multi-crew support: Independent crews with isolated data.
-- [ ] Offline-first: Full offline functionality with sync, maybe in the future.
-
-
-
-
-### 🌟 Phase 3 — Long-term (12 months)
-
-**Mobile Applications**
-- [ ] Native iOS app (App Store).
-- [ ] Native Android app (Google Play).
-- [ ] Apple Watch / Wear OS companion.
-
-
-**Advanced Features**
-- [ ] Crew scheduling and roster management.
-- [ ] Training records and certifications tracking.
-- [ ] Expense management for layovers.
 
 
 
 
 
-### 💡 Long-term Vision
 
-> *"WorldOps aims to become the reference tool for flight crews worldwide — a single platform where every crew member can find destination intelligence, manage their documents, track onboard stock, and report maintenance issues. Built in Switzerland, hosted in Europe, and designed for global aviation."*
+
+
+
+
+
+
+
 
 
 ---
